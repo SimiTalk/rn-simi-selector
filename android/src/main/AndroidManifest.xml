@@ -1,0 +1,44 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools">
+
+  <uses-permission android:name="android.permission.INTERNET" />
+
+  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+  <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+  <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+  <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+  <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED"/>
+
+  <application>
+    <provider
+      android:name="com.rnsimiselector.basic.PictureFileProvider"
+      android:authorities="${applicationId}.simi.luckProvider"
+      android:exported="false"
+      android:grantUriPermissions="true"
+      tools:replace="android:authorities">
+      <meta-data
+        android:name="android.support.FILE_PROVIDER_PATHS"
+        android:resource="@xml/ps_file_paths" />
+    </provider>
+
+    <service
+      android:name="com.rnsimiselector.service.ForegroundService"
+      android:enabled="true"
+      android:foregroundServiceType="location" />
+
+    <activity
+      android:name="com.rnsimiselector.basic.PictureSelectorSupporterActivity"
+      android:configChanges="orientation|keyboardHidden|screenSize"
+      android:theme="@style/Base.Theme.NoActionBar">
+
+    </activity>
+
+    <activity
+      android:name="com.rnsimiselector.basic.PictureSelectorTransparentActivity"
+      android:configChanges="orientation|keyboardHidden|screenSize"
+      android:theme="@style/Picture.Theme.Translucent">
+
+    </activity>
+  </application>
+</manifest>

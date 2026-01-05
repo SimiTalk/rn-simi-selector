@@ -1,0 +1,54 @@
+import RnSimiSelector from './NativeRnSimiSelector';
+
+class SimiPictureSelector {
+  /**
+   * 打开simi照片选择器
+   * 自定义选择单个模式、图片张数、视频个数、语言国际化等
+   *
+   * @param option 可选参数
+   *
+   * isSingle：是否为单选模式
+   * maxImageNum：最大选择图片张数
+   * maxVideoNum：最大选择视频个数
+   * selectMimeType：0-all 或 1-image 或 2-video 或 3-audio
+   * selectLanguage：zh-简体中文 或 en-英文
+   * isCrop：是否编辑
+   * mustCrop：是否必须剪裁
+   * isMixSelect：是否混选视频、图片
+   * imageSizeLimit：图片大小限制
+   * videoSizeLimit：视频大小限制
+   */
+  static async openSelector(option: any): Promise<Object[]> {
+    console.log('openSelector', option);
+    try {
+      const result = await RnSimiSelector.openSelector(option);
+      if (Array.isArray(result) && result.length > 0) {
+        return result;
+      } else {
+        return Promise.reject('No data returned.');
+      }
+    } catch (error) {
+      console.error('Failed to open selector:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 默认模式（图片：6 or 视频：1）
+   */
+  static async openSelectorDefault(): Promise<Object[]> {
+    try {
+      const result = await RnSimiSelector.openSelectorDefault();
+      if (Array.isArray(result) && result.length > 0) {
+        return result;
+      } else {
+        return Promise.reject('No data returned.');
+      }
+    } catch (error) {
+      console.error('Failed to open selector:', error);
+      throw error;
+    }
+  }
+}
+
+export default SimiPictureSelector;
