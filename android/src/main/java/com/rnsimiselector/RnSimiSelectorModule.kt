@@ -16,7 +16,6 @@ class RnSimiSelectorModule(private val reactContext: ReactApplicationContext) :
   }
 
   init {
-    Log.i("GGG", "RnSimiSelectorModule 构造函数被调用")
   }
 
   override fun getName(): String {
@@ -25,13 +24,11 @@ class RnSimiSelectorModule(private val reactContext: ReactApplicationContext) :
 
   @ReactMethod
   override fun openSelectorDefault(promise: Promise) {
-    Log.i("GGG", "openSelectorDefault called")
     simiSelectorModule.openSelector(promise)
   }
 
   @ReactMethod
   override fun openSelector(options: ReadableMap?, promise: Promise) {
-    Log.i("GGG", "openSelector called")
     simiSelectorModule.openSelector(options, promise)
   }
 
