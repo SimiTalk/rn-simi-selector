@@ -16,6 +16,8 @@
 #define DEFAULT_MIX_SELECT NO
 #define DEFAULT_IMAGE_SIZE_LIMIT 0
 #define DEFAULT_VIDEO_SIZE_LIMIT 0
+#define DEFAULT_ASPECTRATIOX 1.0
+#define DEFAULT_ASPECTRATIOY 1.0
 
 @implementation RnSimiSelector
 RCT_EXPORT_MODULE()
@@ -42,7 +44,9 @@ RCT_EXPORT_MODULE()
   BOOL isMixSelect = DEFAULT_MIX_SELECT;
   int imageSizeLimit = DEFAULT_IMAGE_SIZE_LIMIT;
   int videoSizeLimit = DEFAULT_VIDEO_SIZE_LIMIT;
-  
+  int aspectRatioX = DEFAULT_ASPECTRATIOX;
+  int aspectRatioY = DEFAULT_ASPECTRATIOY;
+
   if (options != nil && [options isKindOfClass:[NSDictionary class]]) {
     if (options[@"isSingle"]) {
       isSingle = [options[@"isSingle"] boolValue];
@@ -84,6 +88,12 @@ RCT_EXPORT_MODULE()
     if (options[@"videoSizeLimit"]) {
       videoSizeLimit = [options[@"videoSizeLimit"] intValue];
     }
+    if (options[@"aspectRatioX"]) {
+      aspectRatioX = [options[@"aspectRatioX"] floatValue];
+    }
+    if (options[@"aspectRatioY"]) {
+      aspectRatioY = [options[@"aspectRatioY"] floatValue];
+    }
   }
   
   int maxCount = maxImageNum + maxVideoNum;
@@ -113,6 +123,8 @@ RCT_EXPORT_MODULE()
                              mustCrop:mustCrop
                        imageSizeLimit:imageSizeLimit
                        videoSizeLimit:videoSizeLimit
+                         aspectRatioX:aspectRatioX
+                         aspectRatioY:aspectRatioY
                               resolve:resolve
                              rejecter:reject];
 }
@@ -130,7 +142,8 @@ RCT_EXPORT_MODULE()
   BOOL isMixSelect = DEFAULT_MIX_SELECT;
   int imageSizeLimit = DEFAULT_IMAGE_SIZE_LIMIT;
   int videoSizeLimit = DEFAULT_VIDEO_SIZE_LIMIT;
-
+  int aspectRatioX = DEFAULT_ASPECTRATIOX;
+  int aspectRatioY = DEFAULT_ASPECTRATIOY;
   
   int maxCount = maxImageNum + maxVideoNum;
   
@@ -159,6 +172,8 @@ RCT_EXPORT_MODULE()
                              mustCrop:mustCrop
                        imageSizeLimit:imageSizeLimit
                        videoSizeLimit:videoSizeLimit
+                         aspectRatioX:aspectRatioX
+                         aspectRatioY:aspectRatioY
                               resolve:resolve
                              rejecter:reject];
 
@@ -174,6 +189,8 @@ RCT_EXPORT_MODULE()
                              mustCrop:(BOOL)mustCrop
                        imageSizeLimit:(int)imageSizeLimit
                        videoSizeLimit:(int)videoSizeLimit
+                         aspectRatioX:(float)aspectRatioX
+                         aspectRatioY:(float)aspectRatioY
                               resolve:(RCTPromiseResolveBlock)resolve
                              rejecter:(RCTPromiseRejectBlock)reject {
     
@@ -204,7 +221,12 @@ RCT_EXPORT_MODULE()
             config.allowSelectLivePhoto = NO;
             config.allowSelectOriginal = YES;
             config.editImageConfiguration.tools_objc = @[ @(1) ];
-            config.editImageConfiguration.clipRatios = @[ ZLImageClipRatio.wh1x1 ];
+            if (!aspectRatioX && !aspectRatioY) {
+                config.editImageConfiguration.clipRatios = @[ ZLImageClipRatio.wh1x1 ];
+            }else {
+                ZLImageClipRatio *customWH = [[ZLImageClipRatio alloc] initWithTitle:@"customWH" whRatio:aspectRatioX / aspectRatioY isCircle:NO];
+                config.editImageConfiguration.clipRatios = @[ customWH ];
+            }
             config.editImageConfiguration.showClipDirectlyIfOnlyHasClipTool = YES;
             config.maxSelectCount = 1;
             config.editAfterSelectThumbnailImage = YES;
