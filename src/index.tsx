@@ -17,6 +17,8 @@ class SimiPictureSelector {
    * isMixSelect：是否混选视频、图片
    * imageSizeLimit：图片大小限制
    * videoSizeLimit：视频大小限制
+   * aspectRatioX：图片剪裁比例X
+   * aspectRatioY：图片剪裁比例Y
    */
   static async openSelector(option: any): Promise<Object[]> {
     console.log('openSelector', option);

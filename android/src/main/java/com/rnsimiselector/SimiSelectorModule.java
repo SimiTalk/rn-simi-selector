@@ -80,6 +80,7 @@ public class SimiSelectorModule {
     private static final String DEFAULT_SELECT_MIME_TYPE_LIST = "jpg,jpeg,gif,png,mov,mp4";
     private static final long DEFAULT_IMAGE_SIZE_LIMIT = 0;// 照片限制
     private static final long DEFAULT_VIDEO_SIZE_LIMIT = 0;// 视频限制
+    private static final int DEFAULT_ASPECT_RATIO = 1;// 默认剪裁比例
     private final ReactApplicationContext reactContext;
 
     public SimiSelectorModule(ReactApplicationContext reactContext) {
@@ -109,6 +110,8 @@ public class SimiSelectorModule {
             boolean isSingle = DEFAULT_IS_SINGLE;
             boolean isCrop = DEFAULT_CROP;
             boolean mustCrop = DEFAULT_MUST_CROP;
+            float aspectRatioX = DEFAULT_ASPECT_RATIO;
+            float aspectRatioY = DEFAULT_ASPECT_RATIO;
             int maxImageNum = DEFAULT_MAX_IMAGE_NUM;
             int maxVideoNum = DEFAULT_MAX_VIDEO_NUM;
             int selectMimeType = DEFAULT_SELECT_MIME_TYPE;
@@ -156,10 +159,16 @@ public class SimiSelectorModule {
                 if (options.hasKey("videoSizeLimit")) {
                     videoSizeLimit = options.getInt("videoSizeLimit");
                 }
+                if (options.hasKey("aspectRatioX")) {
+                    aspectRatioX = options.getInt("aspectRatioX");
+                }
+                if (options.hasKey("aspectRatioY")) {
+                    aspectRatioY = options.getInt("aspectRatioY");
+                }
             }
 
             openSelector(isSingle, maxImageNum, maxVideoNum, selectMimeType, selectLanguage, isCrop, mustCrop,
-                    isMixSelect, imageSizeLimit, videoSizeLimit, promise);
+                    isMixSelect, imageSizeLimit, videoSizeLimit, aspectRatioX, aspectRatioY, promise);
         } catch (Throwable e) {
             promise.reject("NATIVE_ERROR", e);
             Log.e(TAG, "openSelector: ", e);
@@ -168,7 +177,7 @@ public class SimiSelectorModule {
 
     private void openSelector(boolean isSingleType, int maxSelectNum, int maxSelectVideoNum, int selectMimeType,
                               int selectLanguage, boolean isCrop, boolean mustCrop, boolean isMixSelect, long imageSizeLimit,
-                              long videoSizeLimit, Promise promise) {
+                              long videoSizeLimit, float aspectRatioX, float aspectRatioY, Promise promise) {
         PictureSelector.create(reactContext.getCurrentActivity())
                 .openGallery(selectMimeType)
                 .setSelectorUIStyle(selectorStyle)
@@ -176,9 +185,9 @@ public class SimiSelectorModule {
                 .setSelectionMode(isSingleType ? SelectModeConfig.SINGLE : SelectModeConfig.MULTIPLE)
                 .isWithSelectVideoImage(isSingleType || isMixSelect)
                 .setImageEngine(GlideEngine.createGlideEngine())
-                .setCropEngine(mustCrop ? new ImageFileCropEngine() : null)
+                .setCropEngine(mustCrop ? new ImageFileCropEngine(aspectRatioX, aspectRatioY) : null)
                 .setCompressEngine(new ImageFileCompressEngine())
-                .setEditMediaInterceptListener(isCrop ? new MeOnMediaEditInterceptListener(getSandboxPath(), buildOptions()) : null)
+                .setEditMediaInterceptListener(isCrop ? new MeOnMediaEditInterceptListener(getSandboxPath(), buildOptions(aspectRatioX, aspectRatioY)) : null)
                 .setImageSpanCount(3)
                 .isOriginalControl(true)
                 .isOriginalSkipCompress(true)
@@ -238,8 +247,7 @@ public class SimiSelectorModule {
                             if (PictureMimeType.isHasVideo(mimeType)) {
                                 String uri = localMedia.getRealPath();
                                 media.putString("uri", "file://" + uri);
-                            } else
-                            if (PictureMimeType.isHasImage(mimeType)) {
+                            } else if (PictureMimeType.isHasImage(mimeType)) {
 //                            if (PictureMimeType.isHasImage(mimeType) || PictureMimeType.isHasVideo(mimeType)) {
                                 boolean original = localMedia.isOriginal();
                                 String realPath = localMedia.getRealPath();
@@ -460,10 +468,17 @@ public class SimiSelectorModule {
      * 自定义裁剪
      */
     private class ImageFileCropEngine implements CropFileEngine {
+        private final float aspectRatioX;
+        private final float aspectRatioY;
+
+        public ImageFileCropEngine(float aspectRatioX, float aspectRatioY) {
+            this.aspectRatioX = aspectRatioX;
+            this.aspectRatioY = aspectRatioY;
+        }
 
         @Override
         public void onStartCrop(Fragment fragment, Uri srcUri, Uri destinationUri, ArrayList<String> dataSource, int requestCode) {
-            UCrop.Options options = buildOptions();
+            UCrop.Options options = buildOptions(aspectRatioX, aspectRatioY);
             UCrop uCrop = UCrop.of(srcUri, destinationUri, dataSource);
             uCrop.withOptions(options);
             uCrop.setImageEngine(new UCropImageEngine() {
@@ -503,7 +518,7 @@ public class SimiSelectorModule {
      *
      * @return
      */
-    private UCrop.Options buildOptions() {
+    private UCrop.Options buildOptions(float x, float y) {
         UCrop.Options options = new UCrop.Options();
         options.setHideBottomControls(true);
         options.setFreeStyleCropEnabled(false);
@@ -512,7 +527,7 @@ public class SimiSelectorModule {
         options.setCircleDimmedLayer(false);
         options.isCropDragSmoothToCenter(false);
         options.isForbidCropGifWebp(false);
-        options.withAspectRatio(1, 1);
+        options.withAspectRatio(x, y);
         options.isForbidSkipMultipleCrop(true);
         options.setMaxScaleMultiplier(100);
         int color_blue = ContextCompat.getColor(reactContext, R.color.ps_color_10AFFF);
